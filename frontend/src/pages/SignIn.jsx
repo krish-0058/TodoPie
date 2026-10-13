@@ -1,84 +1,59 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../assets/sign.css";
 
 const SignIn = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
- useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/authentication`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (res.ok) {
-        navigate("/todos", { replace: true });
-      }
-    } catch (err) {
-      console.error("Authentication check failed:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  checkAuth();
-}, [navigate]);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSignIn = async (e) => {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/signin`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/signin`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ email, password }),
+        }
+      );
 
       const data = await res.json();
 
-      if (res.status === 200) {
+      if (res.ok && data.token) {
+        localStorage.setItem("token", data.token);
         setEmail("");
         setPassword("");
         navigate("/todos", { replace: true });
       } else {
-        setError(data.message);
+        setError(data.message || "Sign in failed.");
       }
     } catch (err) {
-      console.log("Error : ", err);
+      console.error("Sign-in error:", err);
+      setError("Unable to connect to the server.");
+    } finally {
+      setSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <p style={{ color: "white", fontSize: "50px", fontFamily: "sans-serif" }}>
-        Loading...
-      </p>
-    );
-  }
 
   return (
     <div className="container">
       <form className="signup-form" onSubmit={handleSignIn}>
         <h2>Sign In</h2>
+
         <input
           type="email"
           placeholder="Email Address"
-          autoComplete="off"
+          autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -87,7 +62,7 @@ const SignIn = () => {
         <input
           type="password"
           placeholder="Password"
-          autoComplete="off"
+          autoComplete="current-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -95,7 +70,10 @@ const SignIn = () => {
 
         <p className="error">{error}</p>
 
-        <button type="submit">Sign In</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Signing In..." : "Sign In"}
+        </button>
+
         <p>
           Create New Account? <a href="/signup">Create</a>
         </p>

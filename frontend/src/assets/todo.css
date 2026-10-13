@@ -171,7 +171,17 @@
   align-items: center;
   gap: 20px;
   cursor: pointer;
+  background: transparent;
 }
+
+.sideButtons button {
+  background: transparent;
+  border: none;
+  outline: none;
+  box-shadow: none;
+  cursor: pointer;
+}
+
 
 .focus-mode {
   font-size: 14px;

@@ -1,21 +1,33 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../assets/sign.css";
 
 const ChangePassword = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = async (e) => {
     e.preventDefault();
+    setError("");
+    setSubmitting(true);
 
     try {
+      const token = localStorage.getItem("token");
+
+      if (!token) {
+        navigate("/signin", { replace: true });
+        return;
+      }
+
       const res = await fetch(
         `${process.env.REACT_APP_API_URL}/change/password`,
         {
           method: "PATCH",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({ password }),
         }
@@ -23,14 +35,24 @@ const ChangePassword = () => {
 
       const data = await res.json();
 
-      if (res.status === 200) {
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
+        return;
+      }
+
+      if (res.ok) {
+        localStorage.removeItem("token");
         setPassword("");
-        window.location.href = "/signin";
+        navigate("/signin", { replace: true });
       } else {
-        setError(data.message);
+        setError(data.message || "Failed to change password.");
       }
     } catch (err) {
-      console.log("Error occured ", err);
+      console.error("Error changing password:", err);
+      setError("Unable to connect to the server.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -41,16 +63,19 @@ const ChangePassword = () => {
 
         <input
           type="password"
-          placeholder="Password"
-          autoComplete="off"
+          placeholder="New Password"
+          autoComplete="new-password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
+          minLength={8}
         />
 
         <p className="error">{error}</p>
 
-        <button type="submit">Change Password</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Changing..." : "Change Password"}
+        </button>
       </form>
     </div>
   );

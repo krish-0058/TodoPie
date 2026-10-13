@@ -13,13 +13,17 @@ const TodoList = ({ toggleSidebar }) => {
   const params = useParams();
   const navigate = useNavigate();
 
+  const token = localStorage.getItem("token");
+
   const fetchTodo = useCallback(async () => {
     try {
       const res = await fetch(
         `${process.env.REACT_APP_API_URL}/todos/${params.todoId}`,
         {
           method: "GET",
-          credentials: "include",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }
       );
 
@@ -30,6 +34,9 @@ const TodoList = ({ toggleSidebar }) => {
         setAllTodo(data);
       } else if (res.status === 404) {
         window.location.href = data.redirect;
+      } else if (res.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
       } else {
         console.log("Failed to fetch list");
       }
@@ -38,11 +45,16 @@ const TodoList = ({ toggleSidebar }) => {
     } finally {
       setLoading(false);
     }
-  }, [params.todoId]);
+  }, [params.todoId, navigate]);
 
   useEffect(() => {
+    if (!token) {
+      navigate("/signin", { replace: true });
+      return;
+    }
+
     fetchTodo();
-  }, [fetchTodo]);
+  }, [fetchTodo, navigate, token]);
 
   const addTodoList = async (e) => {
     e.preventDefault();
@@ -57,9 +69,9 @@ const TodoList = ({ toggleSidebar }) => {
         `${process.env.REACT_APP_API_URL}/todos/${params.todoId}`,
         {
           method: "POST",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ todo: todoList }),
         }
@@ -71,6 +83,9 @@ const TodoList = ({ toggleSidebar }) => {
         await fetchTodo();
         setTodoList("");
         setError("");
+      } else if (res.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
       } else {
         setError(data.message || "Failed to add todo.");
       }
@@ -80,24 +95,9 @@ const TodoList = ({ toggleSidebar }) => {
     }
   };
 
-  const clearCookie = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/signout`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (res.ok) {
-        navigate("/signin");
-      } else {
-        console.error("Logout failed:", res.status);
-      }
-    } catch (err) {
-      console.error("Error logging out:", err);
-    }
+  const clearCookie = () => {
+    localStorage.removeItem("token");
+    navigate("/signin", { replace: true });
   };
 
   const handleCheckBox = (todo) => {
@@ -116,9 +116,9 @@ const TodoList = ({ toggleSidebar }) => {
         `${process.env.REACT_APP_API_URL}/todos/submit/${params.todoId}`,
         {
           method: "POST",
-          credentials: "include",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
           body: JSON.stringify({ selectedTodos }),
         }
@@ -130,6 +130,9 @@ const TodoList = ({ toggleSidebar }) => {
         setSelectedTodos([]);
         await fetchTodo();
         setError("");
+      } else if (res.status === 401) {
+        localStorage.removeItem("token");
+        navigate("/signin", { replace: true });
       } else {
         setError(data.message || "Failed to complete todos.");
       }

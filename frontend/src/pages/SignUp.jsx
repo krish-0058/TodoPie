@@ -1,16 +1,19 @@
+
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../assets/sign.css";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-
-  
+  const [submitting, setSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   const handleUserData = async (e) => {
     e.preventDefault();
     setError("");
+    setSubmitting(true);
 
     try {
       const res = await fetch(
@@ -20,7 +23,6 @@ const SignUp = () => {
           headers: {
             "Content-Type": "application/json",
           },
-          credentials: "include",
           body: JSON.stringify({ email, password }),
         }
       );
@@ -30,13 +32,15 @@ const SignUp = () => {
       if (res.ok) {
         setEmail("");
         setPassword("");
-        window.location.href = "/todos";
+        navigate("/signin", { replace: true });
       } else {
-        setError(data.message || "Signup failed");
+        setError(data.message || "Signup failed.");
       }
     } catch (err) {
-      console.log("Error occurred:", err);
-      setError("Unable to connect to the server");
+      console.error("Error signing up:", err);
+      setError("Unable to connect to the server.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -66,7 +70,9 @@ const SignUp = () => {
 
         <p className="error">{error}</p>
 
-        <button type="submit">Sign Up</button>
+        <button type="submit" disabled={submitting}>
+          {submitting ? "Creating Account..." : "Sign Up"}
+        </button>
 
         <p>
           Already have an account? <a href="/signin">Login</a>

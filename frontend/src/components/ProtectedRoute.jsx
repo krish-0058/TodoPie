@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 
@@ -7,17 +8,28 @@ const ProtectedRoute = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      try {
-       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/authentication`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const token = localStorage.getItem("token");
 
-        setAuthenticated(res.status === 200);
+      if (!token) {
+        setAuthenticated(false);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_URL}/authentication`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        setAuthenticated(res.ok);
       } catch (err) {
+        console.error("Authentication check failed:", err);
         setAuthenticated(false);
       } finally {
         setLoading(false);

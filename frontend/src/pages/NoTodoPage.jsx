@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
@@ -7,25 +8,11 @@ const NoTodoPage = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/signout`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
-
-      if (res.ok) {
-        window.location.href = "/signin";
-      }
-    } catch (err) {
-      console.log("Error signing out", err);
-    }
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/signin", { replace: true });
   };
 
-  
   const changePass = () => {
     navigate("/change/password");
   };
@@ -37,17 +24,31 @@ const NoTodoPage = () => {
       <div className="todo-bar no-todo-bar">
         <div className="noabove">
           <div>
-            <button className="toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
+            <button
+              className="toggle"
+              type="button"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+            >
               ☰
             </button>
           </div>
+
           <div className="sideButtons">
-            <div className="focus-mode" onClick={handleLogout}>
+            <button
+              type="button"
+              className="focus-mode"
+              onClick={handleLogout}
+            >
               Logout
-            </div>
-            <div className="settings" onClick={changePass}>
+            </button>
+
+            <button
+              type="button"
+              className="settings"
+              onClick={changePass}
+            >
               ⚙️
-            </div>
+            </button>
           </div>
         </div>
 

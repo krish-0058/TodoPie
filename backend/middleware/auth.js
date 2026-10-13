@@ -1,28 +1,24 @@
+
 const jwt = require("jsonwebtoken")
 const secret = "todopie1234//"
 
+function checkForToken(req, res, next) {
+    const authHeader = req.headers.authorization
 
-function checkForCookie(cookieName){
-    return(req,res,next)=>{
-        const token = req.cookies["token"]
-        if(!token){
-            return next()
-        }
-        else{
-            try{
-                const userPayload = jwt.verify(token,secret)
-                req.user = userPayload
-            }
-            catch(err){
-                console.log(err)
-            }
-            next()
-        }
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ valid: false })
+    }
+
+    const token = authHeader.split(" ")[1]
+
+    try {
+        const userPayload = jwt.verify(token, secret)
+        req.user = userPayload
+        next()
+    }
+    catch (err) {
+        return res.status(401).json({ valid: false })
     }
 }
 
-
-
-
-
-module.exports = {checkForCookie}
+module.exports = { checkForToken }
