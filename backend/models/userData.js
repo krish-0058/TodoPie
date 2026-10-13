@@ -2,7 +2,7 @@ const mongoose = require("mongoose")
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 
-const secret = "todopie1234//"
+const secret = process.env.JWT_SECRET
 
 const userSchema =  mongoose.Schema({
     email:{
@@ -68,10 +68,16 @@ userSchema.static("matchingPassword",async function(email,password){
         const salt = user.salt
         const hashedPassword = await bcrypt.hash(password,salt)
         if(user.password === hashedPassword){
-            const token = jwt.sign({
+            const token = jwt.sign(
+            {
                 _id: user._id,
                 email: user.email
-            },secret)
+            },
+            secret,
+            { expiresIn: "3d" }
+        )
+
+        return token
 
             return token
         }
