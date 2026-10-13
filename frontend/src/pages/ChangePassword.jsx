@@ -10,7 +10,7 @@ const ChangePassword = () => {
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/change/password`,
+        `${process.env.REACT_APP}/change/password`,
         {
           method: "PATCH",
           credentials: "include",

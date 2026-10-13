@@ -16,7 +16,7 @@ const TodoList = ({ toggleSidebar }) => {
   const fetchTodo = useCallback(async () => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/todos/${params.todoId}`,
+        `${process.env.REACT_APP}/todos/${params.todoId}`,
         {
           method: "GET",
           credentials: "include",
@@ -54,7 +54,7 @@ const TodoList = ({ toggleSidebar }) => {
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/todos/${params.todoId}`,
+        `${process.env.REACT_APP}/todos/${params.todoId}`,
         {
           method: "POST",
           credentials: "include",
@@ -83,7 +83,7 @@ const TodoList = ({ toggleSidebar }) => {
   const clearCookie = async () => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/signout`,
+        `${process.env.REACT_APP}/signout`,
         {
           method: "GET",
           credentials: "include",
@@ -113,7 +113,7 @@ const TodoList = ({ toggleSidebar }) => {
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP_API_URL}/todos/submit/${params.todoId}`,
+        `${process.env.REACT_APP}/todos/submit/${params.todoId}`,
         {
           method: "POST",
           credentials: "include",
