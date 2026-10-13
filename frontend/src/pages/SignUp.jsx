@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import "../assets/sign.css";
 
 const SignUp = () => {
@@ -6,20 +6,7 @@ const SignUp = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  // useEffect(() => {
-  //   const clearCookie = async () => {
-  //     try {
-  //       await fetch(`${process.env.REACT_APP_API_URL}/signout`, {
-  //         method: "GET",
-  //         credentials: "include",
-  //       });
-  //     } catch (err) {
-  //       console.log("Error", err);
-  //     }
-  //   };
-
-  //   clearCookie();
-  // }, []);
+  
 
   const handleUserData = async (e) => {
     e.preventDefault();

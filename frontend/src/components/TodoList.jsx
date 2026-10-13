@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+
+import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 
 const TodoList = ({ toggleSidebar }) => {
@@ -12,12 +13,15 @@ const TodoList = ({ toggleSidebar }) => {
   const params = useParams();
   const navigate = useNavigate();
 
-  const fetchTodo = async () => {
+  const fetchTodo = useCallback(async () => {
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/todos/${params.todoId}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/todos/${params.todoId}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
 
       const data = await res.json();
 
@@ -34,67 +38,74 @@ const TodoList = ({ toggleSidebar }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [params.todoId]);
 
   useEffect(() => {
     fetchTodo();
-  }, [params.todoId]);
+  }, [fetchTodo]);
 
   const addTodoList = async (e) => {
     e.preventDefault();
 
+    if (!todoList.trim()) {
+      setError("Please enter a todo.");
+      return;
+    }
+
     try {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/todos/${params.todoId}`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          todo: todoList,
-        }),
-      });
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/todos/${params.todoId}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ todo: todoList }),
+        }
+      );
 
       const data = await res.json();
 
       if (res.status === 200) {
-        fetchTodo();
+        await fetchTodo();
         setTodoList("");
         setError("");
       } else {
-        setError(data.message);
+        setError(data.message || "Failed to add todo.");
       }
     } catch (err) {
-      console.log("Error occured ", err);
+      console.error("Error adding todo:", err);
+      setError("Something went wrong. Please try again.");
     }
   };
 
   const clearCookie = async () => {
     try {
-        const res = await fetch(
-      `${process.env.REACT_APP_API_URL}/signout`,
-      {
-        method: "GET",
-        credentials: "include",
-      }
-    );
+      const res = await fetch(
+        `${process.env.REACT_APP_API_URL}/signout`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
 
-    if (res.ok) {
-      window.location.href = "/signin";
-    } else {
-      console.error("Logout failed:", res.status);
-    }
+      if (res.ok) {
+        navigate("/signin");
+      } else {
+        console.error("Logout failed:", res.status);
+      }
     } catch (err) {
-      console.log("Error");
+      console.error("Error logging out:", err);
     }
   };
 
   const handleCheckBox = (todo) => {
-    if (selectedTodos.includes(todo)) {
-      setSelectedTodos(selectedTodos.filter((t) => t !== todo));
-    } else {
-      setSelectedTodos([...selectedTodos, todo]);
-    }
+    setSelectedTodos((prevSelected) =>
+      prevSelected.includes(todo)
+        ? prevSelected.filter((item) => item !== todo)
+        : [...prevSelected, todo]
+    );
   };
 
   const submitTodo = async (e) => {
@@ -109,21 +120,22 @@ const TodoList = ({ toggleSidebar }) => {
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            selectedTodos,
-          }),
+          body: JSON.stringify({ selectedTodos }),
         }
       );
 
       const data = await res.json();
 
       if (res.status === 200) {
-        fetchTodo();
+        setSelectedTodos([]);
+        await fetchTodo();
+        setError("");
       } else {
-        setError(data.message);
+        setError(data.message || "Failed to complete todos.");
       }
     } catch (err) {
-      console.log("Error occured ", err);
+      console.error("Error submitting todos:", err);
+      setError("Something went wrong. Please try again.");
     }
   };
 
@@ -131,21 +143,39 @@ const TodoList = ({ toggleSidebar }) => {
     navigate("/change/password");
   };
 
-  if (loading || !validate) {
+  if (loading) {
     return (
       <div
         style={{
-          width: "100vw",
-          height: "100vh",
+          width: "100%",
+          minHeight: "100vh",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
           color: "white",
-          fontSize: "50px",
+          fontSize: "30px",
           fontFamily: "sans-serif",
         }}
       >
         Loading...
+      </div>
+    );
+  }
+
+  if (!validate) {
+    return (
+      <div
+        style={{
+          width: "100%",
+          minHeight: "100vh",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          color: "white",
+          fontFamily: "sans-serif",
+        }}
+      >
+        Unable to load this todo list.
       </div>
     );
   }
@@ -158,13 +188,23 @@ const TodoList = ({ toggleSidebar }) => {
             ☰
           </button>
         </div>
+
         <div className="sideButtons">
-          <div className="focus-mode" onClick={clearCookie}>
+          <button
+            type="button"
+            className="focus-mode"
+            onClick={clearCookie}
+          >
             Logout
-          </div>
-          <div className="settings" onClick={changePass}>
+          </button>
+
+          <button
+            type="button"
+            className="settings"
+            onClick={changePass}
+          >
             ⚙️
-          </div>
+          </button>
         </div>
       </div>
 
@@ -178,30 +218,39 @@ const TodoList = ({ toggleSidebar }) => {
             value={todoList}
             onChange={(e) => setTodoList(e.target.value)}
           />
-          <button className="new-list-btn">+ Add Todo</button>
+
+          <button type="submit" className="new-list-btn">
+            + Add Todo
+          </button>
         </form>
       </div>
 
       <div className="all-todos">
         {allTodo.map((item, index) => (
-          <div className="todo-item" key={item._id || `${item.todo}-${index}`}>
+          <div
+            className="todo-item"
+            key={item._id || `${item.todo}-${index}`}
+          >
             <label>
               <input
                 type="checkbox"
                 checked={selectedTodos.includes(item.todo)}
                 onChange={() => handleCheckBox(item.todo)}
               />
+
               <span>{item.todo}</span>
             </label>
           </div>
         ))}
       </div>
 
-      {error ? <p className="error">{error}</p> : null}
+      {error && <p className="error">{error}</p>}
 
       <div>
         <form onSubmit={submitTodo}>
-          <button className="completed">Completed</button>
+          <button type="submit" className="completed">
+            Completed
+          </button>
         </form>
       </div>
     </div>
