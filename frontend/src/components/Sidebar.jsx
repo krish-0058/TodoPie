@@ -10,7 +10,7 @@ const Sidebar = () => {
   useEffect(() => {
     const fetchList = async () => {
       try {
-        const res = await fetch(`${process.env.REACT_APP}/list`, {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/list`, {
           method: "GET",
           credentials: "include",
         });
@@ -33,7 +33,7 @@ const Sidebar = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${process.env.REACT_APP}/list`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/list`, {
         method: "POST",
         credentials: "include",
         headers: {
@@ -60,7 +60,7 @@ const Sidebar = () => {
 
   const deleteList = async (deleteListName) => {
     try {
-      await fetch(`${process.env.REACT_APP}/deletelist`, {
+      await fetch(`${process.env.REACT_APP_API_URL}/deletelist`, {
         method: "POST",
         credentials: "include",
         headers: {

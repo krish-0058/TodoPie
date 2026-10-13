@@ -10,7 +10,7 @@ const NoTodoPage = () => {
   const handleLogout = async () => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP}/signout`,
+        `${process.env.REACT_APP_API_URL}/signout`,
         {
           method: "GET",
           credentials: "include",

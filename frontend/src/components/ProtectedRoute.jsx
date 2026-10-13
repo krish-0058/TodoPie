@@ -9,7 +9,7 @@ const ProtectedRoute = ({ children }) => {
     const checkAuth = async () => {
       try {
        const res = await fetch(
-        `${process.env.REACT_APP}/authentication`,
+        `${process.env.REACT_APP_API_URL}/authentication`,
         {
           method: "GET",
           credentials: "include",

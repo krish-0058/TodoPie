@@ -14,7 +14,7 @@ const SignUp = () => {
 
     try {
       const res = await fetch(
-        `${process.env.REACT_APP}/signup`,
+        `${process.env.REACT_APP_API_URL}/signup`,
         {
           method: "POST",
           headers: {

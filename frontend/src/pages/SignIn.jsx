@@ -13,7 +13,7 @@ const SignIn = () => {
   const checkAuth = async () => {
     try {
       const res = await fetch(
-        `${process.env.REACT_APP}/authentication`,
+        `${process.env.REACT_APP_API_URL}/authentication`,
         {
           method: "GET",
           credentials: "include",
@@ -37,7 +37,7 @@ const SignIn = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`${process.env.REACT_APP}/signin`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/signin`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
